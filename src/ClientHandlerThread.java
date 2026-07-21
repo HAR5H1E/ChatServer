@@ -24,8 +24,6 @@ public class ClientHandlerThread implements Runnable {
 			output.writeObject("ENTER ID");
 			this.Id = (String) input.readObject();
 			
-			
-			
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (ClassNotFoundException e) {
