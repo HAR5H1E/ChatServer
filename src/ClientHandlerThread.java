@@ -81,6 +81,8 @@ public class ClientHandlerThread implements Runnable {
 				}else {
 					output.writeObject("Username or Password is Incorrect");
 				}
+				
+				mainServer.serverClient.put(this.Id, this);
 			
 			
 			}
