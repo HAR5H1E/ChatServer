@@ -13,7 +13,7 @@ public class DBManager {
 		String SqlQuery = "CREATE TABLE IF NOT EXISTS users ("
 				+"	userID text PRIMARY KEY,"
 				+"  Password text not NULL,"
-				+"	numID  text not NULL,"
+				+"	numID  text not NULL"
 				+");";
 		
 		try{

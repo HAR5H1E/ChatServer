@@ -43,14 +43,12 @@ public class ClientHandlerThread implements Runnable {
 		
 					output.writeObject("REGISTERED!");
 					output.writeObject("YOUR UUID IS: "+UncID);
+					mainServer.serverClient.put(this.Id, this);
 					break;
 				
 				}else if(Choice.toLowerCase().startsWith("login")) {
-					output.writeObject("ENTER UserName");
-					this.Id = (String) input.readObject();
 					
-					output.writeObject("ENTER Password");
-					this.Password = (String) input.readObject();
+					boolean IsAuth = false;
 					int PassCount = 0;
 					
 					while (PassCount < 5) {
@@ -61,29 +59,38 @@ public class ClientHandlerThread implements Runnable {
 						this.Password = (String) input.readObject();
 						boolean val = DBManager.Search(this.Id, this.Password);
 						
+						System.out.println(val);
 						if (val) {
 							output.writeObject("LOGGED!");
 							PassCount = 0;
+							
+							if (this.Id != null && !this.Id.trim().isEmpty()) {
+								mainServer.serverClient.put(this.Id, this);
+							}
+							IsAuth = true;
 							break;
 						}else {
-							output.writeObject("Incorrect Try Again");
 							PassCount++;
+							if (PassCount < 5) {
+								output.writeObject("Incorrect credentials. Try again (" + (5 - PassCount) + " attempts left)");
+							}
 						}
 						
 					}
 					
-					if (PassCount !=0) {
+					
+					if (!IsAuth) {
 						output.writeObject("Too Many Tries Exiting Program");
 						this.connection.close();
 					}
 
 					
 				}else {
-					output.writeObject("Username or Password is Incorrect");
+					output.writeObject("Invalid Either Login or Register");
 				}
 				
-				mainServer.serverClient.put(this.Id, this);
-			
+				System.out.println(mainServer.serverClient);
+				
 			
 			}
 			
