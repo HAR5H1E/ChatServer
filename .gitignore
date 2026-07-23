@@ -1,0 +1,5 @@
+#non tracking bin file
+bin/
+
+#non tracking db file
+Users.db
