@@ -78,26 +78,30 @@ public class ClientHandlerThread implements Runnable {
 						
 					}
 					
-					
 					if (!IsAuth) {
 						output.writeObject("Too Many Tries Exiting Program");
 						this.connection.close();
+					}else {
+						break;
 					}
-
+					
+				}else if ((Choice.toLowerCase().startsWith("quit"))) {
+					this.connection.close();
+					break;
 					
 				}else {
 					output.writeObject("Invalid Either Login or Register");
 				}
 				
-				System.out.println(mainServer.serverClient);
-				
 			
 			}
 			
 		} catch (IOException e) {
-			e.printStackTrace();
+			System.out.println(e.getMessage());
 		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
+			System.out.println(e.getMessage());
+		}catch (Exception e) {
+			System.out.println(e.getMessage());
 		}
 		
 		

@@ -37,7 +37,8 @@ public class ClientServer {
 				
 				message = userInput.nextLine();	
 				output.writeObject(message);
-				System.out.println();
+
+				
 				
 			}
 			
