@@ -12,8 +12,20 @@ public class ClientHandlerThread implements Runnable {
 	private String Id;
 	private String Password;
 	
+	
 	public ClientHandlerThread(Socket connection) {
 		this.connection = connection;
+	}
+	
+	public synchronized void sendMessage(String msg) {
+		try {
+			if (msg != null) {
+				output.writeObject(this.Id+": "+msg);
+				output.flush();
+			}
+		}catch(Exception e) {
+			System.out.println("Error sending message");
+		}
 	}
 
 	@Override
@@ -81,6 +93,7 @@ public class ClientHandlerThread implements Runnable {
 					if (!IsAuth) {
 						output.writeObject("Too Many Tries Exiting Program");
 						this.connection.close();
+						return;
 					}else {
 						break;
 					}
@@ -96,12 +109,36 @@ public class ClientHandlerThread implements Runnable {
 			
 			}
 			
+			output.writeObject("LOGIN SUCCESFUL");
+			output.writeObject("Commands: @username message");
+			
+			while (true) {
+				String Choice = (String) input.readObject();
+				if (Choice.startsWith("@")) {
+					String[] msg = Choice.split(" ", 2);
+					String recip = msg[0].substring(1);
+					if (msg.length==2) {
+						ClientHandlerThread recipId = mainServer.serverClient.get(recip);
+						if (recipId != null) {
+							recipId.sendMessage(msg[1]);
+							
+						}else {
+							output.writeObject("RECIPIENT OFFLINE; TRY WHEN ONLINE");
+						}
+					}
+					
+				}
+				else {
+					output.writeObject("Incorrect format");
+				}
+			}
+			
 		} catch (IOException e) {
-			System.out.println(e.getMessage());
+			System.out.println(this.connection.getInetAddress().toString() +" Disconected form server");
 		} catch (ClassNotFoundException e) {
-			System.out.println(e.getMessage());
+			System.out.println(this.connection.getInetAddress().toString() +" Disconected form server");
 		}catch (Exception e) {
-			System.out.println(e.getMessage());
+			System.out.println(this.connection.getInetAddress().toString() +" Disconected form server");
 		}
 		
 		

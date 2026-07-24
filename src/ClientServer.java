@@ -26,6 +26,7 @@ public class ClientServer {
 					
 				}catch(Exception e) {
 					System.out.println("\nConnection to server closed.");
+					return;
 				}
 				
 			});
@@ -37,7 +38,7 @@ public class ClientServer {
 				
 				message = userInput.nextLine();	
 				output.writeObject(message);
-
+				
 				
 				
 			}
@@ -50,7 +51,7 @@ public class ClientServer {
 			
 		}catch(IOException e) {
 			System.out.println("Error Sever Connection");
-			System.out.println(e.getMessage());
+			//System.out.println(e.getMessage());
 		}
 		
 
