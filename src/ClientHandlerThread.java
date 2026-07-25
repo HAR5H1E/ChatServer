@@ -5,25 +5,24 @@ import java.net.Socket;
 import java.util.UUID;
 
 public class ClientHandlerThread implements Runnable {
-	
+
 	private final Socket connection;
 	private ObjectOutputStream output;
 	private ObjectInputStream input;
 	private String Id;
 	private String Password;
-	
-	
+
 	public ClientHandlerThread(Socket connection) {
 		this.connection = connection;
 	}
-	
-	public synchronized void sendMessage(ClientHandlerThread sender,String msg) {
+
+	public synchronized void sendMessage(ClientHandlerThread sender, String msg) {
 		try {
 			if (msg != null) {
-				output.writeObject(sender.Id+": "+msg);
+				output.writeObject(sender.Id + ": " + msg);
 				output.flush();
 			}
-		}catch(Exception e) {
+		} catch (Exception e) {
 			try {
 				sender.output.writeObject("ERROR SENDING MESSAGE");
 			} catch (IOException e1) {
@@ -34,120 +33,150 @@ public class ClientHandlerThread implements Runnable {
 
 	@Override
 	public void run() {
+		this.UserLogin();
+		this.MainPage();
+
+	}
+
+	private void UserLogin() {
 		try {
 			output = new ObjectOutputStream(connection.getOutputStream());
 			output.flush();
 			input = new ObjectInputStream(connection.getInputStream());
-			
-			while (true){
+
+			while (true) {
 				output.writeObject("LOGIN OR REGISTER");
 				String Choice = (String) input.readObject();
-				
+
 				if (Choice.toLowerCase().startsWith("register")) {
-				
+
 					output.writeObject("ENTER UserName");
 					this.Id = (String) input.readObject();
-					
+
 					output.writeObject("ENTER Password");
 					this.Password = (String) input.readObject();
-					
+
 					String UncID = UUID.randomUUID().toString();
 					UncID = UncID.replace("-", "");
-					
-					DBManager.InsertRow(this.Id,this.Password,UncID);
-					
-		
+
+					DBManager.InsertRow(this.Id, this.Password, UncID);
+
 					output.writeObject("REGISTERED!");
-					output.writeObject("YOUR UUID IS: "+UncID);
+					output.writeObject("YOUR UUID IS: " + UncID);
 					mainServer.serverClient.put(this.Id, this);
 					break;
-				
-				}else if(Choice.toLowerCase().startsWith("login")) {
-					
+
+				} else if (Choice.toLowerCase().startsWith("login")) {
+
 					boolean IsAuth = false;
 					int PassCount = 0;
-					
+
 					while (PassCount < 5) {
 						output.writeObject("ENTER UserName");
 						this.Id = (String) input.readObject();
-						
+
 						output.writeObject("ENTER Password");
 						this.Password = (String) input.readObject();
 						boolean val = DBManager.Search(this.Id, this.Password);
-						
+
 						System.out.println(val);
 						if (val) {
 							output.writeObject("LOGGED!");
 							PassCount = 0;
-							
+
 							if (this.Id != null && !this.Id.trim().isEmpty()) {
 								mainServer.serverClient.put(this.Id, this);
 							}
 							IsAuth = true;
 							break;
-						}else {
+						} else {
 							PassCount++;
 							if (PassCount < 5) {
-								output.writeObject("Incorrect credentials. Try again (" + (5 - PassCount) + " attempts left)");
+								output.writeObject(
+										"Incorrect credentials. Try again (" + (5 - PassCount) + " attempts left)");
 							}
 						}
-						
+
 					}
-					
+
 					if (!IsAuth) {
 						output.writeObject("Too Many Tries Exiting Program");
 						this.connection.close();
 						return;
-					}else {
+					} else {
 						break;
 					}
-					
-				}else if ((Choice.toLowerCase().startsWith("quit"))) {
+
+				} else if ((Choice.toLowerCase().startsWith("quit"))) {
+					if (mainServer.serverClient.containsKey(Choice)) {
+						mainServer.serverClient.remove(Choice);
+					}
 					this.connection.close();
 					break;
-					
-				}else {
+
+				} else {
 					output.writeObject("Invalid Either Login or Register");
 				}
-			
+
 			}
-			
+
 			output.writeObject("LOGIN SUCCESFUL");
-			
+			this.MainPage();
+
+		} catch (IOException e) {
+			System.out.println(this.connection.getInetAddress().getCanonicalHostName() + "Has Left the server");
+			System.out.println(e.getMessage());
+		} catch (ClassNotFoundException e) {
+			System.out.println(this.connection.getInetAddress().getCanonicalHostName() + "Class Error");
+			System.out.println(e.getMessage());
+		} catch (Exception e) {
+			System.out.println(this.connection.getInetAddress().getCanonicalHostName() + " Disconected form server");
+			System.out.println(e.getMessage());
+		}
+
+	}
+
+	private void MainPage() {
+		try {
 			while (true) {
 				String Choice = (String) input.readObject();
 				if (Choice.startsWith("@")) {
 					String[] msg = Choice.split(" ", 2);
 					String recip = msg[0].substring(1);
-					if (msg.length==2) {
+					if (msg.length == 2) {
 						ClientHandlerThread recipId = mainServer.serverClient.get(recip);
 						if (recipId != null) {
-							recipId.sendMessage(this,msg[1]);
-							
-						}else {
+							recipId.sendMessage(this, msg[1]);
+
+						} else {
 							output.writeObject("RECIPIENT OFFLINE; TRY WHEN ONLINE");
 						}
 					}
-					
-				}else if (Choice.toLowerCase().startsWith("help")){
-					
+
+				} else if (Choice.toLowerCase().startsWith("help")) {
+
 					output.writeObject("Commands\n@username Message");
-			
-					
-				}else {
+
+				} else if ((Choice.toLowerCase().startsWith("quit"))) {
+					this.connection.close();
+					mainServer.serverClient.remove(Choice);
+					break;
+
+				} else {
 					output.writeObject("Incorrect format");
 				}
+
 			}
-			
 		} catch (IOException e) {
-			System.out.println(this.connection.getInetAddress().getCanonicalHostName()  +" Disconected form server");
+			System.out.println(this.connection.getInetAddress().getCanonicalHostName() + "Has Left the server");
+			System.out.println(e.getMessage());
 		} catch (ClassNotFoundException e) {
-			System.out.println(this.connection.getInetAddress().getCanonicalHostName() +" Disconected form server");
-		}catch (Exception e) {
-			System.out.println(this.connection.getInetAddress().getCanonicalHostName() +" Disconected form server");
+			System.out.println(this.connection.getInetAddress().getCanonicalHostName() + "Class Error");
+			System.out.println(e.getMessage());
+		} catch (Exception e) {
+			System.out.println(this.connection.getInetAddress().getCanonicalHostName() + " Disconected form server");
+			System.out.println(e.getMessage());
 		}
-		
-		
 	}
 
 }

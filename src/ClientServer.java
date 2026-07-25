@@ -21,7 +21,6 @@ public class ClientServer {
 					while (true) {
 						String inputServer = (String) input.readObject();
 						System.out.println("\n" + inputServer);
-			            System.out.print("> ");
 					}
 					
 				}catch(Exception e) {
@@ -44,10 +43,7 @@ public class ClientServer {
 			
 			userInput.close();
 			server.close();
-			System.out.println("Disconnect");
-			
-			
-			
+
 		}catch(IOException e) {
 			System.out.println("Error Server Connection");
 		}
