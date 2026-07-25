@@ -78,5 +78,29 @@ public class DBManager {
 		}
 	
 	}
+	
+	public static String[] getInfo(String Name) {
+		String SqlQuery = "SELECT userID , numID FROM users WHERE userID = ?";
+		try {
+			
+			Connection conn = DriverManager.getConnection(URL);
+			PreparedStatement Statment = conn.prepareStatement(SqlQuery);
+			Statment.setString(1,Name);
+			ResultSet rs = Statment.executeQuery();
+			
+			if (rs.next()){
+				return new String[] {rs.getString(1),rs.getString(2)};
+			}
+			return null;
+			
+		}catch(SQLException e) {
+			e.printStackTrace();
+			return null;
+		}catch(Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	
+	}
 
 }

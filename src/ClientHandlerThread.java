@@ -26,7 +26,7 @@ public class ClientHandlerThread implements Runnable {
 			try {
 				sender.output.writeObject("ERROR SENDING MESSAGE");
 			} catch (IOException e1) {
-				e1.printStackTrace();
+				System.out.println(e1.getMessage());
 			}
 		}
 	}
@@ -152,10 +152,21 @@ public class ClientHandlerThread implements Runnable {
 							output.writeObject("RECIPIENT OFFLINE; TRY WHEN ONLINE");
 						}
 					}
+				}else if (Choice.startsWith("/")) {
+					String[] msg = Choice.split(" ", 2);
+					String cmd = msg[0].substring(1);
+					System.out.println(cmd);
+					if(cmd.toLowerCase().equals("details")) {
+						String[] Details = DBManager.getInfo(this.Id);
+						System.out.println(Details[0]);
+						output.writeObject("DETAILS\n"+"Name: "+Details[0]+"\nUUID"+Details[1]);
+					}
+					
+					
 
 				} else if (Choice.toLowerCase().startsWith("help")) {
 
-					output.writeObject("Commands\n@username Message");
+					output.writeObject("Commands\n@username Message\n/Details");
 
 				} else if ((Choice.toLowerCase().startsWith("quit"))) {
 					this.connection.close();

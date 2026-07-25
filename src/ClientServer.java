@@ -20,7 +20,7 @@ public class ClientServer {
 				try {
 					while (true) {
 						String inputServer = (String) input.readObject();
-						System.out.println("\n" + inputServer);
+						System.out.println(inputServer);
 					}
 					
 				}catch(Exception e) {
