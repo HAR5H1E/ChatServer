@@ -13,18 +13,16 @@ public class mainServer {
 		try {
 			ServerSocket mainServer = new ServerSocket(PORT);
 			System.out.println("SERVER RUNNING AT PORT 8080");
-			
+
 			while (true) {
 				Socket connection = mainServer.accept();
-				System.out.println("Found a User !: "+ connection.getInetAddress().getCanonicalHostName());
-				Thread workerThread = new Thread(new ClientHandlerThread(connection)) ;
+				System.out.println("Found a User !: " + connection.getInetAddress().getCanonicalHostName());
+				Thread workerThread = new Thread(new ClientHandlerThread(connection));
 				workerThread.start();
 			}
-			
-			
 
 		} catch (IOException e) {
-			
+			System.out.println("SERVER CLOSED");
 			System.out.println(e.getMessage());
 		}
 	}

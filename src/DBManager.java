@@ -6,104 +6,81 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 public class DBManager {
-	
+
 	private static final String URL = "jdbc:sqlite:Users.db";
-	
+
 	public static boolean CreateTable() {
-		String SqlQuery = "CREATE TABLE IF NOT EXISTS users ("
-				+"	userID text PRIMARY KEY,"
-				+"  Password text not NULL,"
-				+"	numID  text not NULL"
-				+");";
-		
-		try{
-			Connection conn = DriverManager.getConnection(URL);
-			Statement Statment = conn.createStatement();
-			Statment.execute(SqlQuery);
+		String sqlQuery = "CREATE TABLE IF NOT EXISTS users (" + "userID TEXT PRIMARY KEY, "
+				+ "Password TEXT NOT NULL, " + "numID TEXT NOT NULL" + ");";
+
+		try (Connection conn = DriverManager.getConnection(URL); Statement statement = conn.createStatement()) {
+
+			statement.execute(sqlQuery);
 			return true;
-			
-		} catch (SQLException e) {
-			
-			e.printStackTrace();
-			return false;
-			
-		}catch (Exception e) {
-			e.printStackTrace();
-			return false;
-		}
-		
-	}
-	
-	public static boolean InsertRow(String Name,String Password,String UUID) {
-		String SqlQuery ="INSERT INTO users VALUES (?,?,?)";
-		try {
-			
-			Connection conn = DriverManager.getConnection(URL);
-			PreparedStatement Statment = conn.prepareStatement(SqlQuery);
-			Statment.setString(1,Name);
-			Statment.setString(2,Password);
-			Statment.setString(3,UUID);
-			Statment.execute();
-			return true;
-			
-			
+
 		} catch (SQLException e) {
 			e.printStackTrace();
 			return false;
-		}catch (Exception e) {
-			e.printStackTrace();
-			return false;
 		}
-	
-		
-	}
-	
-	public static String Search(String Name) {
-		String SqlQuery = "SELECT Password FROM users WHERE userID = ?";
-		try {
-			
-			Connection conn = DriverManager.getConnection(URL);
-			PreparedStatement Statment = conn.prepareStatement(SqlQuery);
-			Statment.setString(1,Name);
-			ResultSet rs = Statment.executeQuery();
-			if (rs.next()) {
-				return rs.getString(1);
-			}else {
-				return null;
-			}
-			
-		}catch(SQLException e) {
-			e.printStackTrace();
-			return null;
-		}catch(Exception e) {
-			e.printStackTrace();
-			return null;
-		}
-	
-	}
-	
-	public static String[] getInfo(String Name) {
-		String SqlQuery = "SELECT userID , numID FROM users WHERE userID = ?";
-		try {
-			
-			Connection conn = DriverManager.getConnection(URL);
-			PreparedStatement Statment = conn.prepareStatement(SqlQuery);
-			Statment.setString(1,Name);
-			ResultSet rs = Statment.executeQuery();
-			
-			if (rs.next()){
-				return new String[] {rs.getString(1),rs.getString(2)};
-			}
-			return null;
-			
-		}catch(SQLException e) {
-			e.printStackTrace();
-			return null;
-		}catch(Exception e) {
-			e.printStackTrace();
-			return null;
-		}
-	
 	}
 
+	public static synchronized boolean InsertRow(String name, String password, String uuid) {
+		String sqlQuery = "INSERT INTO users (userID, Password, numID) VALUES (?, ?, ?)";
+
+		try (Connection conn = DriverManager.getConnection(URL);
+				PreparedStatement statement = conn.prepareStatement(sqlQuery)) {
+
+			statement.setString(1, name);
+			statement.setString(2, password);
+			statement.setString(3, uuid);
+			statement.executeUpdate();
+			return true;
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+
+	public static synchronized String Search(String name) {
+		String sqlQuery = "SELECT Password FROM users WHERE userID = ?";
+
+		try (Connection conn = DriverManager.getConnection(URL);
+				PreparedStatement statement = conn.prepareStatement(sqlQuery)) {
+
+			statement.setString(1, name);
+
+			try (ResultSet rs = statement.executeQuery()) {
+				if (rs.next()) {
+					return rs.getString("Password");
+				}
+			}
+			return null;
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	public static synchronized String[] getInfo(String name) {
+		String sqlQuery = "SELECT userID, numID FROM users WHERE userID = ?";
+
+		try (Connection conn = DriverManager.getConnection(URL);
+				PreparedStatement statement = conn.prepareStatement(sqlQuery)) {
+
+			statement.setString(1, name);
+
+			try (ResultSet rs = statement.executeQuery()) {
+				if (rs.next()) {
+					return new String[] { rs.getString("userID"), rs.getString("numID") };
+				}
+			}
+			return null;
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
 }
