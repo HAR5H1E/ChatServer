@@ -3,3 +3,6 @@ bin/
 
 #non tracking db file
 Users.db
+
+#Non Tracking classPath
+.classpath

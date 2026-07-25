@@ -35,6 +35,11 @@ public class ClientServer {
 			System.out.println("\nType your message below (type 'quit' to exit):");
 			while(!message.toLowerCase().equals("quit")) {
 				
+				try {
+					Thread.sleep(50);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
 				System.out.print("> ");
 				message = userInput.nextLine();	
 				output.writeObject(message);
@@ -42,7 +47,10 @@ public class ClientServer {
 			}
 			
 			userInput.close();
+			output.close();
+			input.close();
 			server.close();
+			System.exit(0);
 
 		}catch(IOException e) {
 			System.out.println("Error Server Connection");

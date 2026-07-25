@@ -4,6 +4,8 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.UUID;
 
+import org.mindrot.jbcrypt.BCrypt;
+
 public class ClientHandlerThread implements Runnable {
 
 	private final Socket connection;
@@ -55,11 +57,18 @@ public class ClientHandlerThread implements Runnable {
 
 					output.writeObject("ENTER Password");
 					this.Password = (String) input.readObject();
+					while (this.Password.toLowerCase().equals("null")) {
+						output.writeObject("Cannot Enter Password as Null");
+						output.writeObject("ENTER Password");
+						this.Password = (String) input.readObject();
+					}
 
 					String UncID = UUID.randomUUID().toString();
 					UncID = UncID.replace("-", "");
+					
+					String HashPassword = BCrypt.hashpw(this.Password,BCrypt.gensalt());
 
-					DBManager.InsertRow(this.Id, this.Password, UncID);
+					DBManager.InsertRow(this.Id, HashPassword, UncID);
 
 					output.writeObject("REGISTERED!");
 					output.writeObject("YOUR UUID IS: " + UncID);
@@ -77,10 +86,8 @@ public class ClientHandlerThread implements Runnable {
 
 						output.writeObject("ENTER Password");
 						this.Password = (String) input.readObject();
-						boolean val = DBManager.Search(this.Id, this.Password);
-
-						System.out.println(val);
-						if (val) {
+						String val = DBManager.Search(this.Id);
+						if (val != null && BCrypt.checkpw(this.Password, val)) {
 							output.writeObject("LOGGED!");
 							PassCount = 0;
 

@@ -58,23 +58,26 @@ public class DBManager {
 		
 	}
 	
-	public static boolean Search(String Name,String Password) {
-		String SqlQuery = "SELECT 1 FROM users WHERE userID = ? AND Password = ?";
+	public static String Search(String Name) {
+		String SqlQuery = "SELECT Password FROM users WHERE userID = ?";
 		try {
 			
 			Connection conn = DriverManager.getConnection(URL);
 			PreparedStatement Statment = conn.prepareStatement(SqlQuery);
 			Statment.setString(1,Name);
-			Statment.setString(2,Password);
 			ResultSet rs = Statment.executeQuery();
-			return rs.next();
+			if (rs.next()) {
+				return rs.getString(1);
+			}else {
+				return null;
+			}
 			
 		}catch(SQLException e) {
 			e.printStackTrace();
-			return false;
+			return null;
 		}catch(Exception e) {
 			e.printStackTrace();
-			return false;
+			return null;
 		}
 	
 	}
