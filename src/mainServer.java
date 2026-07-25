@@ -16,11 +16,10 @@ public class mainServer {
 			
 			while (true) {
 				Socket connection = mainServer.accept();
-				System.out.println("Found a User !: "+ connection.getInetAddress().getHostAddress());
+				System.out.println("Found a User !: "+ connection.getInetAddress().getCanonicalHostName());
 				Thread workerThread = new Thread(new ClientHandlerThread(connection)) ;
 				workerThread.start();
 			}
-			
 			
 			
 

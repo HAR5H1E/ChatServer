@@ -17,14 +17,18 @@ public class ClientHandlerThread implements Runnable {
 		this.connection = connection;
 	}
 	
-	public synchronized void sendMessage(String msg) {
+	public synchronized void sendMessage(ClientHandlerThread sender,String msg) {
 		try {
 			if (msg != null) {
-				output.writeObject(this.Id+": "+msg);
+				output.writeObject(sender.Id+": "+msg);
 				output.flush();
 			}
 		}catch(Exception e) {
-			System.out.println("Error sending message");
+			try {
+				sender.output.writeObject("ERROR SENDING MESSAGE");
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
 		}
 	}
 
@@ -105,12 +109,10 @@ public class ClientHandlerThread implements Runnable {
 				}else {
 					output.writeObject("Invalid Either Login or Register");
 				}
-				
 			
 			}
 			
 			output.writeObject("LOGIN SUCCESFUL");
-			output.writeObject("Commands: @username message");
 			
 			while (true) {
 				String Choice = (String) input.readObject();
@@ -120,25 +122,29 @@ public class ClientHandlerThread implements Runnable {
 					if (msg.length==2) {
 						ClientHandlerThread recipId = mainServer.serverClient.get(recip);
 						if (recipId != null) {
-							recipId.sendMessage(msg[1]);
+							recipId.sendMessage(this,msg[1]);
 							
 						}else {
 							output.writeObject("RECIPIENT OFFLINE; TRY WHEN ONLINE");
 						}
 					}
 					
-				}
-				else {
+				}else if (Choice.toLowerCase().startsWith("help")){
+					
+					output.writeObject("Commands\n@username Message");
+			
+					
+				}else {
 					output.writeObject("Incorrect format");
 				}
 			}
 			
 		} catch (IOException e) {
-			System.out.println(this.connection.getInetAddress().toString() +" Disconected form server");
+			System.out.println(this.connection.getInetAddress().getCanonicalHostName()  +" Disconected form server");
 		} catch (ClassNotFoundException e) {
-			System.out.println(this.connection.getInetAddress().toString() +" Disconected form server");
+			System.out.println(this.connection.getInetAddress().getCanonicalHostName() +" Disconected form server");
 		}catch (Exception e) {
-			System.out.println(this.connection.getInetAddress().toString() +" Disconected form server");
+			System.out.println(this.connection.getInetAddress().getCanonicalHostName() +" Disconected form server");
 		}
 		
 		
