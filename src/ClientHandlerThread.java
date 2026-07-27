@@ -100,10 +100,20 @@ public class ClientHandlerThread implements Runnable {
 			if (Choice.toLowerCase().startsWith("register")) {
 
 				output.writeObject("ENTER UserName");
-				this.Id = (String) input.readObject();
+				String User = (String) input.readObject();
+				
+				while (User.toLowerCase().equals("null") &&
+						!DBManager.SearchUserAvailability(User)) {
+					
+					output.writeObject("UserNames Unavailable");
+					output.writeObject("ENTER UserName");
+					User = (String) input.readObject();
+					
+				}
+
 
 				output.writeObject("ENTER Password");
-				this.Password = (String) input.readObject();
+				String newPassword = (String) input.readObject();
 				while (this.Password.toLowerCase().equals("null")) {
 					output.writeObject("Cannot Enter Password as Null");
 					output.writeObject("ENTER Password");
@@ -113,9 +123,10 @@ public class ClientHandlerThread implements Runnable {
 				String UncID = UUID.randomUUID().toString();
 				UncID = UncID.replace("-", "");
 
-				String HashPassword = BCrypt.hashpw(this.Password, BCrypt.gensalt());
+				String HashPassword = BCrypt.hashpw(newPassword, BCrypt.gensalt());
 
-				DBManager.InsertRow(this.Id, HashPassword, UncID);
+				DBManager.InsertRow(User, HashPassword, UncID);
+				this.Id = User;
 
 				output.writeObject("REGISTERED!");
 				output.writeObject("YOUR UUID IS: " + UncID);

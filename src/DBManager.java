@@ -62,6 +62,29 @@ public class DBManager {
 			return null;
 		}
 	}
+	
+	public static synchronized Boolean SearchUserAvailability(String name) {
+		String SQLquery = "SELECT 1 FROM users WHERE userID = ?";
+		try (Connection conn = DriverManager.getConnection(URL);
+				PreparedStatement statement = conn.prepareStatement(SQLquery)) {
+
+			statement.setString(1, name);
+
+			try (ResultSet rs = statement.executeQuery()) {
+				if (rs.next()) {
+					return true;
+				} 
+				else {
+					return false;
+				}
+			}
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return false;
+		}
+		
+	}
 
 	public static synchronized String[] getInfo(String name) {
 		String sqlQuery = "SELECT userID, numID FROM users WHERE userID = ?";
