@@ -33,6 +33,7 @@ public class ClientServer {
 						}
 
 						if (inputServer.equals("r--ShutDown--r")) {
+					
 							System.exit(0);
 						} else {
 							System.out.println("\r" + inputServer);
