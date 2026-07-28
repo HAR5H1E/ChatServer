@@ -106,4 +106,20 @@ public class DBManager {
 			return null;
 		}
 	}
+	
+	public static synchronized boolean Delete(String name) {
+		String SQLquery = "DELETE FROM users WHERE userID = ?";
+		try (Connection conn = DriverManager.getConnection(URL);
+				PreparedStatement statement = conn.prepareStatement(SQLquery)) {
+
+			statement.setString(1, name);
+			statement.executeUpdate();
+			return true;
+			
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
 }

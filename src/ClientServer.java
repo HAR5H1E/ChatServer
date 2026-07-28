@@ -33,8 +33,9 @@ public class ClientServer {
 						}
 
 						if (inputServer.equals("r--ShutDown--r")) {
-					
-							System.exit(0);
+							server.close();
+							output.close();
+							input.close();
 						} else {
 							System.out.println("\r" + inputServer);
 							Print();
@@ -42,7 +43,7 @@ public class ClientServer {
 					}
 
 				} catch (Exception e) {
-					System.out.println("\nConnection to server closed.");
+					System.out.println("Connection to server closed.");
 					System.exit(0);
 					return;
 				}
@@ -58,11 +59,10 @@ public class ClientServer {
 
 			}
 
+			server.close();
 			userInput.close();
 			output.close();
 			input.close();
-			server.close();
-			System.exit(0);
 
 		} catch (IOException e) {
 			System.out.println("Error Server Connection");

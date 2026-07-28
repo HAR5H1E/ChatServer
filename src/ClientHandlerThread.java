@@ -40,8 +40,11 @@ public class ClientHandlerThread implements Runnable {
 				System.out.println("Removed User: " + this.Id);
 				mainServer.serverClient.remove(this.Id);
 			}
-			output.writeObject("r--ShutDown--r");
+			
 			this.connection.close();
+			output.close();
+			input.close();
+			
 
 		} catch (IOException e) {
 
@@ -52,7 +55,7 @@ public class ClientHandlerThread implements Runnable {
 	public synchronized void sendMessage(ClientHandlerThread sender, String msg) {
 		try {
 			if (msg != null) {
-				output.writeObject(sender.Id + ": " + msg);
+				output.writeObject(sender.Id + " : " + msg);
 				output.flush();
 			}
 		} catch (Exception e) {
@@ -68,8 +71,13 @@ public class ClientHandlerThread implements Runnable {
 	public void run() {
 
 		try {
-			this.UserLogin();
-			this.MainPage();
+			int val = this.UserLogin();
+			if (val == 0){
+				this.MainPage();
+			}
+			
+			output.close();
+			input.close();
 		} catch (SocketTimeoutException e) {
 			System.out.println(this.connection.getInetAddress().getCanonicalHostName() + " Has TimedOut");
 			try {
@@ -110,7 +118,6 @@ public class ClientHandlerThread implements Runnable {
 					User = (String) input.readObject();
 					
 				}
-
 
 				output.writeObject("ENTER Password");
 				String newPassword = (String) input.readObject();
@@ -168,19 +175,11 @@ public class ClientHandlerThread implements Runnable {
 
 				if (!IsAuth) {
 					output.writeObject("Too Many Tries Exiting Program");
-					output.writeObject("r--ShutDown--r");
-					this.connection.close();
+					this.closeConection();
 					return 1;
 				} else {
 					break;
 				}
-
-			} else if ((Choice.toLowerCase().startsWith("quit"))) {
-				if (mainServer.serverClient.containsKey(this.Id)) {
-					mainServer.serverClient.remove(this.Id);
-				}
-				this.connection.close();
-				break;
 			} else {
 				output.writeObject("Invalid Either Login or Register");
 			}
@@ -216,15 +215,27 @@ public class ClientHandlerThread implements Runnable {
 					System.out.println(Details[0]);
 					output.writeObject("DETAILS\n" + "Name: " + Details[0] + "\nUUID" + Details[1]);
 				}
+				else if (cmd.toLowerCase().equals("delete")) {
+					output.writeObject("ENTER Password");
+					String password = (String) input.readObject();
+					String val = DBManager.Search(this.Id);
+
+					if (val != null && BCrypt.checkpw(password, val)) {
+						if (DBManager.Delete(this.Id)) {
+							output.writeObject("REMOVING USER");
+							output.writeObject("r--ShutDown--r");
+						}else {
+							output.writeObject("ERROR COULD NOT DELETE USER");
+							
+						}
+					}
+						
+				}
 
 			} else if (Choice.toLowerCase().startsWith("help")) {
 
 				output.writeObject("Commands\n@username Message\n/Details");
-
-			} else if ((Choice.toLowerCase().startsWith("quit"))) {
-				this.connection.close();
-				mainServer.serverClient.remove(this.Id);
-				break;
+				
 
 			} else {
 				output.writeObject("Incorrect format");
@@ -232,7 +243,6 @@ public class ClientHandlerThread implements Runnable {
 
 		}
 
-		return 0;
 	}
 
 }
