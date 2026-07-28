@@ -22,7 +22,7 @@ public class ClientHandlerThread implements Runnable {
 		this.Password = "";
 		try {
 
-			this.connection.setSoTimeout(15000);
+			this.connection.setSoTimeout(60000);
 			output = new ObjectOutputStream(connection.getOutputStream());
 			output.flush();
 			input = new ObjectInputStream(connection.getInputStream());
@@ -110,8 +110,8 @@ public class ClientHandlerThread implements Runnable {
 				output.writeObject("ENTER UserName");
 				String User = (String) input.readObject();
 				
-				while (User.toLowerCase().equals("null") &&
-						!DBManager.SearchUserAvailability(User)) {
+				while (User.toLowerCase().equals("null") ||
+						DBManager.SearchUserAvailability(User)) {
 					
 					output.writeObject("UserNames Unavailable");
 					output.writeObject("ENTER UserName");
@@ -153,11 +153,14 @@ public class ClientHandlerThread implements Runnable {
 					String password = (String) input.readObject();
 					String val = DBManager.Search(User);
 
-					if (val != null && BCrypt.checkpw(password, val)) {
+					if (val != null && BCrypt.checkpw(password, val)
+							&& !mainServer.serverClient.containsKey(User)) {
 						PassCount = 0;
 						this.Id = User;
 						this.Password = password;
-						if (this.Id != null && !this.Id.trim().isEmpty()) {
+						if (this.Id != null
+								&& !this.Id.trim().isEmpty()) {
+							
 							mainServer.serverClient.put(this.Id, this);
 						}
 						IsAuth = true;
@@ -167,7 +170,7 @@ public class ClientHandlerThread implements Runnable {
 						PassCount++;
 						if (PassCount < 5) {
 							output.writeObject(
-									"Incorrect credentials. Try again (" + (5 - PassCount) + " attempts left)");
+									"Incorrect credentials or User session Exists. Try again (" + (5 - PassCount) + " attempts left)");
 						}
 					}
 
