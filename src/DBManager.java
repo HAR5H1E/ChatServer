@@ -8,6 +8,7 @@ import java.sql.Statement;
 public class DBManager {
 
 	private static final String URL = "jdbc:sqlite:Users.db";
+	private static final String CONTACTURL = "jdbc:sqlite:Users.db";
 
 	public static boolean CreateTable() {
 		String sqlQuery = "CREATE TABLE IF NOT EXISTS users (" + "userID TEXT PRIMARY KEY, "

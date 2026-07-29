@@ -5,9 +5,12 @@ import java.net.Socket;
 import java.util.Scanner;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
+
 public class ClientServer {
 	
-	private static final int PORT = 8080;
+	private static final int PORT = 3000;
 	private static final AtomicBoolean isPresent = new AtomicBoolean(false);
 	
 	public static void Print() {
@@ -18,7 +21,8 @@ public class ClientServer {
 
 	public static void main(String[] args) {
 		try {
-			Socket server = new Socket("localhost", PORT);
+			SSLSocketFactory ssl = (SSLSocketFactory) SSLSocketFactory.getDefault();
+			SSLSocket server = (SSLSocket) ssl.createSocket("localhost",PORT);
 			ObjectOutputStream output = new ObjectOutputStream(server.getOutputStream());
 			output.flush();
 			ObjectInputStream input = new ObjectInputStream(server.getInputStream());
@@ -56,6 +60,9 @@ public class ClientServer {
 			while (!message.toLowerCase().equals("quit")) {
 				message = userInput.nextLine();
 				output.writeObject(message);
+				if (message.startsWith("@")) {
+					Print();
+				}
 
 			}
 

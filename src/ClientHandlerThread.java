@@ -2,9 +2,11 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.util.UUID;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 
 import org.mindrot.jbcrypt.BCrypt;
 
@@ -19,10 +21,9 @@ public class ClientHandlerThread implements Runnable {
 	public ClientHandlerThread(Socket connection) {
 		this.connection = connection;
 		this.Id = "";
-		this.Password = "";
 		try {
 
-			this.connection.setSoTimeout(60000);
+			this.connection.setSoTimeout(900000);
 			output = new ObjectOutputStream(connection.getOutputStream());
 			output.flush();
 			input = new ObjectInputStream(connection.getInputStream());
@@ -55,7 +56,10 @@ public class ClientHandlerThread implements Runnable {
 	public synchronized void sendMessage(ClientHandlerThread sender, String msg) {
 		try {
 			if (msg != null) {
-				output.writeObject(sender.Id + " : " + msg);
+				LocalDateTime now = LocalDateTime.now();
+				DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+				String TimeStamp = now.format(format);
+				output.writeObject("["+TimeStamp+"] "+sender.Id + " : " + msg);
 				output.flush();
 			}
 		} catch (Exception e) {
@@ -157,7 +161,6 @@ public class ClientHandlerThread implements Runnable {
 							&& !mainServer.serverClient.containsKey(User)) {
 						PassCount = 0;
 						this.Id = User;
-						this.Password = password;
 						if (this.Id != null
 								&& !this.Id.trim().isEmpty()) {
 							
