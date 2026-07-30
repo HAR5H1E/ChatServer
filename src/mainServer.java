@@ -2,7 +2,6 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.ConcurrentHashMap;
-import javax.net.ssl.SSLServerSocketFactory;
 
 public class mainServer {
 	
@@ -10,11 +9,11 @@ public class mainServer {
 	public static ConcurrentHashMap<String,ClientHandlerThread> serverClient = new ConcurrentHashMap<>();
 	
 	public static void main(String args[]) {
-		DBManager.CreateTable();
+		DBManager.CreateUserTable();
+		DBManager.CreateContactTable();
 		try {
-			SSLServerSocketFactory ssl = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
-			ServerSocket mainServer = ssl.createServerSocket(PORT);
-			System.out.println("SERVER RUNNING AT PORT 8080");
+			ServerSocket mainServer =  new ServerSocket(PORT);
+			System.out.println("SERVER RUNNING AT PORT: "+PORT);
 
 			while (true) {
 				Socket connection = mainServer.accept();
@@ -22,9 +21,11 @@ public class mainServer {
 				Thread workerThread = new Thread(new ClientHandlerThread(connection));
 				workerThread.start();
 			}
+			
 
 		} catch (IOException e) {
 			System.out.println(e.getMessage());
+		
 		}
 	}
 

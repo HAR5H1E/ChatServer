@@ -84,6 +84,7 @@ public class ClientHandlerThread implements Runnable {
 			input.close();
 		} catch (SocketTimeoutException e) {
 			System.out.println(this.connection.getInetAddress().getCanonicalHostName() + " Has TimedOut");
+			e.printStackTrace();
 			try {
 				output.writeObject("You have TimedOut");
 			} catch (IOException e1) {
@@ -91,12 +92,15 @@ public class ClientHandlerThread implements Runnable {
 			}
 			this.closeConection();
 		} catch (IOException e) {
+			e.printStackTrace();
 			System.out.println(this.connection.getInetAddress().getCanonicalHostName() + " Has Left the server");
 			this.closeConection();
 		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
 			System.out.println(this.connection.getInetAddress().getCanonicalHostName() + " Class Error");
 			this.closeConection();
 		} catch (Exception e) {
+			e.printStackTrace();
 			System.out.println(this.connection.getInetAddress().getCanonicalHostName() + " Disconected form server");
 			this.closeConection();
 		}
@@ -125,10 +129,10 @@ public class ClientHandlerThread implements Runnable {
 
 				output.writeObject("ENTER Password");
 				String newPassword = (String) input.readObject();
-				while (this.Password.toLowerCase().equals("null")) {
+				while (newPassword.toLowerCase().equals("null")) {
 					output.writeObject("Cannot Enter Password as Null");
 					output.writeObject("ENTER Password");
-					this.Password = (String) input.readObject();
+					newPassword = (String) input.readObject();
 				}
 
 				String UncID = UUID.randomUUID().toString();
@@ -200,17 +204,24 @@ public class ClientHandlerThread implements Runnable {
 		output.writeObject("WELCOME TO THE MAIN PAGE (press help for commands or quit to exit)");
 		while (true) {
 			String Choice = (String) input.readObject();
+			Choice = Choice.trim();
 			if (Choice.startsWith("@")) {
 				String[] msg = Choice.split(" ", 2);
 				String recip = msg[0].substring(1);
 				if (msg.length == 2) {
-					ClientHandlerThread recipId = mainServer.serverClient.get(recip);
-					if (recipId != null) {
-						recipId.sendMessage(this, msg[1]);
-
-					} else {
-						output.writeObject("RECIPIENT OFFLINE; TRY WHEN ONLINE");
+					if (DBManager.getContacts(this.Id,recip)) {
+						ClientHandlerThread recipId = mainServer.serverClient.get(recip);
+						if (recipId != null) {
+							recipId.sendMessage(this, msg[1]);
+	
+						} else {
+							output.writeObject("RECIPIENT OFFLINE; TRY WHEN ONLINE");
+						}
+					}else {
+						output.writeObject("RECIPIENT NOT IN YOUR CONTACTS LIST(Use cmd /add)");
 					}
+				}else {
+					output.writeObject("USAGE: @username message");
 				}
 			} else if (Choice.startsWith("/")) {
 				String[] msg = Choice.split(" ", 2);
@@ -234,8 +245,38 @@ public class ClientHandlerThread implements Runnable {
 							output.writeObject("ERROR COULD NOT DELETE USER");
 							
 						}
+					}else {
+						output.writeObject("INCORRECT PASSWORD");
 					}
+					
 						
+				}else if (cmd.toLowerCase().equals("add")) {
+				    output.writeObject("ENTER ContactName");
+				    String name = (String) input.readObject();
+				    output.writeObject("ENTER UUID");
+				    String UUID = (String) input.readObject();
+
+				    int PassCount = 0;
+				    boolean isAuth = DBManager.checkContact(name, UUID);
+
+				    while (!isAuth && PassCount < 5) {
+				        PassCount++;
+				        output.writeObject("Incorrect credentials. Try again (" +
+				            (5 - PassCount) + " attempts left)");
+
+				        output.writeObject("ENTER ContactName");
+				        name = (String) input.readObject();
+				        output.writeObject("ENTER UUID");
+				        UUID = (String) input.readObject();
+
+				        isAuth = DBManager.checkContact(name, UUID);
+				    }
+
+				    if (isAuth) {
+				        DBManager.addContact(this.Id, name);
+				    } else {
+				        output.writeObject("Too many tries");
+				    }
 				}
 
 			} else if (Choice.toLowerCase().startsWith("help")) {

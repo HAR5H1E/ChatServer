@@ -21,8 +21,8 @@ public class ClientServer {
 
 	public static void main(String[] args) {
 		try {
-			SSLSocketFactory ssl = (SSLSocketFactory) SSLSocketFactory.getDefault();
-			SSLSocket server = (SSLSocket) ssl.createSocket("localhost",PORT);
+		
+			Socket server = new Socket("localhost",PORT);
 			ObjectOutputStream output = new ObjectOutputStream(server.getOutputStream());
 			output.flush();
 			ObjectInputStream input = new ObjectInputStream(server.getInputStream());
@@ -47,6 +47,8 @@ public class ClientServer {
 					}
 
 				} catch (Exception e) {
+					e.printStackTrace();
+					System.out.println(e.getMessage());
 					System.out.println("Connection to server closed.");
 					System.exit(0);
 					return;

@@ -8,9 +8,9 @@ import java.sql.Statement;
 public class DBManager {
 
 	private static final String URL = "jdbc:sqlite:Users.db";
-	private static final String CONTACTURL = "jdbc:sqlite:Users.db";
+	private static final String CONTACTURL = "jdbc:sqlite:Contacts.db";
 
-	public static boolean CreateTable() {
+	public static boolean CreateUserTable() {
 		String sqlQuery = "CREATE TABLE IF NOT EXISTS users (" + "userID TEXT PRIMARY KEY, "
 				+ "Password TEXT NOT NULL, " + "numID TEXT NOT NULL" + ");";
 
@@ -23,6 +23,27 @@ public class DBManager {
 			e.printStackTrace();
 			return false;
 		}
+	}
+	
+	public static boolean CreateContactTable() {
+	    String sqlQuery = "CREATE TABLE IF NOT EXISTS contacts (" 
+	            + "userID TEXT NOT NULL, "
+	            + "ContactID TEXT NOT NULL,"
+	            + "FOREIGN KEY (userID) REFERENCES users(userID) ON DELETE CASCADE,"
+	            + "UNIQUE(userID, ContactID)"
+	            + ");";
+
+	    try (Connection conn = DriverManager.getConnection(URL); Statement statement = conn.createStatement()) {
+
+	        statement.execute(sqlQuery);
+	        Statement pragma = conn.createStatement();
+	        pragma.execute("PRAGMA foreign_keys = ON;");
+	        return true;
+
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	        return false;
+	    }
 	}
 
 	public static synchronized boolean InsertRow(String name, String password, String uuid) {
@@ -88,7 +109,7 @@ public class DBManager {
 	}
 
 	public static synchronized String[] getInfo(String name) {
-		String sqlQuery = "SELECT userID, numID FROM users WHERE userID = ?";
+		String sqlQuery = "SELECT userID,numID FROM users WHERE userID = ?";
 
 		try (Connection conn = DriverManager.getConnection(URL);
 				PreparedStatement statement = conn.prepareStatement(sqlQuery)) {
@@ -105,6 +126,58 @@ public class DBManager {
 		} catch (SQLException e) {
 			e.printStackTrace();
 			return null;
+		}
+	}
+	
+	public static synchronized boolean checkContact(String name,String UUID) {
+		String[] Info = getInfo(name);
+		
+		if (Info != null) {
+			if (UUID.equals(Info[1])) {
+				return true;
+			}else {
+				return false;
+			}
+		}
+		return false;
+	}
+	
+	public static synchronized boolean addContact(String name,String Recip) {
+		String sqlQuery = "INSERT INTO Contacts(userID,ContactID ) VALUES (?, ?)";
+
+		try (Connection conn = DriverManager.getConnection(URL);
+				PreparedStatement statement = conn.prepareStatement(sqlQuery)) {
+
+			statement.setString(1, name);
+			statement.setString(2, Recip);
+			statement.executeUpdate();
+			return true;
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+	
+	public static synchronized boolean getContacts(String name,String recipId) {
+		String sqlQuery = "SELECT 1 FROM Contacts WHERE userID = ? AND ContactID = ?";
+
+		try (Connection conn = DriverManager.getConnection(URL);
+				PreparedStatement statement = conn.prepareStatement(sqlQuery)) {
+
+			statement.setString(1, name);
+			statement.setString(2, recipId);
+
+			try (ResultSet rs = statement.executeQuery()) {
+				if (rs.next()) {
+					return true;
+				}
+			}
+			return false;
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return false;
 		}
 	}
 	
