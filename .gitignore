@@ -3,6 +3,7 @@ bin/
 
 #non tracking db file
 Users.db
+Contacts.db
 
 #Non Tracking classPath
 .classpath

@@ -4,6 +4,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DBManager {
 
@@ -33,7 +35,8 @@ public class DBManager {
 	            + "UNIQUE(userID, ContactID)"
 	            + ");";
 
-	    try (Connection conn = DriverManager.getConnection(URL); Statement statement = conn.createStatement()) {
+	    try (Connection conn = DriverManager.getConnection(CONTACTURL); 
+	    		Statement statement = conn.createStatement()) {
 
 	        statement.execute(sqlQuery);
 	        Statement pragma = conn.createStatement();
@@ -145,7 +148,7 @@ public class DBManager {
 	public static synchronized boolean addContact(String name,String Recip) {
 		String sqlQuery = "INSERT INTO Contacts(userID,ContactID ) VALUES (?, ?)";
 
-		try (Connection conn = DriverManager.getConnection(URL);
+		try (Connection conn = DriverManager.getConnection(CONTACTURL);
 				PreparedStatement statement = conn.prepareStatement(sqlQuery)) {
 
 			statement.setString(1, name);
@@ -159,10 +162,33 @@ public class DBManager {
 		}
 	}
 	
+	public static synchronized List<String> searchContactList(String name) {
+		String sqlQuery = "SELECT ContactID FROM Contacts WHERE userID = ? ";
+		List<String> contacts = new ArrayList<>();
+		try (Connection conn = DriverManager.getConnection(CONTACTURL);
+				PreparedStatement statement = conn.prepareStatement(sqlQuery)) {
+
+			statement.setString(1, name);
+
+			try (ResultSet rs = statement.executeQuery()) {
+				while (rs.next()) {
+					contacts.add(rs.getString("ContactID"));
+				}
+				
+				return contacts;
+			}
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	
 	public static synchronized boolean getContacts(String name,String recipId) {
 		String sqlQuery = "SELECT 1 FROM Contacts WHERE userID = ? AND ContactID = ?";
 
-		try (Connection conn = DriverManager.getConnection(URL);
+		try (Connection conn = DriverManager.getConnection(CONTACTURL);
 				PreparedStatement statement = conn.prepareStatement(sqlQuery)) {
 
 			statement.setString(1, name);

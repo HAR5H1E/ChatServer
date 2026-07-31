@@ -3,6 +3,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+import java.util.List;
 import java.util.UUID;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -16,7 +17,6 @@ public class ClientHandlerThread implements Runnable {
 	private ObjectOutputStream output;
 	private ObjectInputStream input;
 	private String Id;
-	private String Password;
 
 	public ClientHandlerThread(Socket connection) {
 		this.connection = connection;
@@ -262,7 +262,7 @@ public class ClientHandlerThread implements Runnable {
 				    while (!isAuth && PassCount < 5) {
 				        PassCount++;
 				        output.writeObject("Incorrect credentials. Try again (" +
-				            (5 - PassCount) + " attempts left)");
+				            (4 - PassCount) + " attempts left)");
 
 				        output.writeObject("ENTER ContactName");
 				        name = (String) input.readObject();
@@ -273,15 +273,35 @@ public class ClientHandlerThread implements Runnable {
 				    }
 
 				    if (isAuth) {
+				    	output.writeObject("Contact Added");
 				        DBManager.addContact(this.Id, name);
 				    } else {
 				        output.writeObject("Too many tries");
 				    }
 				}
+				else if (cmd.toLowerCase().startsWith("contacts")) {
+					System.out.println("hello?");
+					List<String> contacts = DBManager.searchContactList(this.Id);
+					int i = 0;
+					System.out.println(contacts);
+					if(contacts != null) {
+						if (contacts.size()!=0) {
+							for (String val: contacts) {
+								i++;
+								output.writeObject(i+". "+val);
+							}
+						}else {
+							output.writeObject("Coudnt get Contacts (maybe Empty?)");
+						}
+					}else {
+						output.writeObject("Coudnt get Contacts (maybe Empty?)");
+					}
+				}
 
 			} else if (Choice.toLowerCase().startsWith("help")) {
 
 				output.writeObject("Commands\n@username Message\n/Details");
+			
 				
 
 			} else {

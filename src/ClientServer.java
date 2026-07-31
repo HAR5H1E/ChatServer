@@ -47,8 +47,6 @@ public class ClientServer {
 					}
 
 				} catch (Exception e) {
-					e.printStackTrace();
-					System.out.println(e.getMessage());
 					System.out.println("Connection to server closed.");
 					System.exit(0);
 					return;
