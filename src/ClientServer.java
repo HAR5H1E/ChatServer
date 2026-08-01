@@ -5,9 +5,6 @@ import java.net.Socket;
 import java.util.Scanner;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import javax.net.ssl.SSLSocket;
-import javax.net.ssl.SSLSocketFactory;
-
 public class ClientServer {
 	
 	private static final int PORT = 3000;

@@ -10,13 +10,21 @@ import java.util.List;
 public class DBManager {
 
 	private static final String URL = "jdbc:sqlite:Users.db";
-	private static final String CONTACTURL = "jdbc:sqlite:Contacts.db";
+
+	
+	private static Connection getConnection() throws SQLException {
+        Connection conn = DriverManager.getConnection(URL);
+        try (Statement pragma = conn.createStatement()) {
+            pragma.execute("PRAGMA foreign_keys = ON;");
+        }
+        return conn;
+    }
 
 	public static boolean CreateUserTable() {
 		String sqlQuery = "CREATE TABLE IF NOT EXISTS users (" + "userID TEXT PRIMARY KEY, "
 				+ "Password TEXT NOT NULL, " + "numID TEXT NOT NULL" + ");";
 
-		try (Connection conn = DriverManager.getConnection(URL); Statement statement = conn.createStatement()) {
+		try (Connection conn = getConnection(); Statement statement = conn.createStatement()) {
 
 			statement.execute(sqlQuery);
 			return true;
@@ -28,31 +36,31 @@ public class DBManager {
 	}
 	
 	public static boolean CreateContactTable() {
-	    String sqlQuery = "CREATE TABLE IF NOT EXISTS contacts (" 
-	            + "userID TEXT NOT NULL, "
-	            + "ContactID TEXT NOT NULL,"
-	            + "FOREIGN KEY (userID) REFERENCES users(userID) ON DELETE CASCADE,"
-	            + "UNIQUE(userID, ContactID)"
-	            + ");";
 
-	    try (Connection conn = DriverManager.getConnection(CONTACTURL); 
-	    		Statement statement = conn.createStatement()) {
+        String sqlQuery = "CREATE TABLE IF NOT EXISTS contacts ("
+                + "userID TEXT NOT NULL, "
+                + "ContactID TEXT NOT NULL, "
+                + "FOREIGN KEY (userID) REFERENCES users(userID) ON DELETE CASCADE, "
+                + "FOREIGN KEY (ContactID) REFERENCES users(userID) ON DELETE CASCADE, "
+                + "UNIQUE(userID, ContactID)"
+                + ");";
 
-	        statement.execute(sqlQuery);
-	        Statement pragma = conn.createStatement();
-	        pragma.execute("PRAGMA foreign_keys = ON;");
-	        return true;
+        try (Connection conn = getConnection(); 
+             Statement statement = conn.createStatement()) {
 
-	    } catch (SQLException e) {
-	        e.printStackTrace();
-	        return false;
-	    }
-	}
+            statement.execute(sqlQuery);
+            return true;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 
 	public static synchronized boolean InsertRow(String name, String password, String uuid) {
 		String sqlQuery = "INSERT INTO users (userID, Password, numID) VALUES (?, ?, ?)";
 
-		try (Connection conn = DriverManager.getConnection(URL);
+		try (Connection conn =getConnection();
 				PreparedStatement statement = conn.prepareStatement(sqlQuery)) {
 
 			statement.setString(1, name);
@@ -70,7 +78,7 @@ public class DBManager {
 	public static synchronized String Search(String name) {
 		String sqlQuery = "SELECT Password FROM users WHERE userID = ?";
 
-		try (Connection conn = DriverManager.getConnection(URL);
+		try (Connection conn =getConnection();
 				PreparedStatement statement = conn.prepareStatement(sqlQuery)) {
 
 			statement.setString(1, name);
@@ -90,7 +98,7 @@ public class DBManager {
 	
 	public static synchronized Boolean SearchUserAvailability(String name) {
 		String SQLquery = "SELECT 1 FROM users WHERE userID = ?";
-		try (Connection conn = DriverManager.getConnection(URL);
+		try (Connection conn =getConnection();
 				PreparedStatement statement = conn.prepareStatement(SQLquery)) {
 
 			statement.setString(1, name);
@@ -114,7 +122,7 @@ public class DBManager {
 	public static synchronized String[] getInfo(String name) {
 		String sqlQuery = "SELECT userID,numID FROM users WHERE userID = ?";
 
-		try (Connection conn = DriverManager.getConnection(URL);
+		try (Connection conn =getConnection();
 				PreparedStatement statement = conn.prepareStatement(sqlQuery)) {
 
 			statement.setString(1, name);
@@ -148,7 +156,7 @@ public class DBManager {
 	public static synchronized boolean addContact(String name,String Recip) {
 		String sqlQuery = "INSERT INTO Contacts(userID,ContactID ) VALUES (?, ?)";
 
-		try (Connection conn = DriverManager.getConnection(CONTACTURL);
+		try (Connection conn =getConnection();
 				PreparedStatement statement = conn.prepareStatement(sqlQuery)) {
 
 			statement.setString(1, name);
@@ -165,7 +173,7 @@ public class DBManager {
 	public static synchronized List<String> searchContactList(String name) {
 		String sqlQuery = "SELECT ContactID FROM Contacts WHERE userID = ? ";
 		List<String> contacts = new ArrayList<>();
-		try (Connection conn = DriverManager.getConnection(CONTACTURL);
+		try (Connection conn = getConnection();
 				PreparedStatement statement = conn.prepareStatement(sqlQuery)) {
 
 			statement.setString(1, name);
@@ -188,7 +196,7 @@ public class DBManager {
 	public static synchronized boolean getContacts(String name,String recipId) {
 		String sqlQuery = "SELECT 1 FROM Contacts WHERE userID = ? AND ContactID = ?";
 
-		try (Connection conn = DriverManager.getConnection(CONTACTURL);
+		try (Connection conn = getConnection();
 				PreparedStatement statement = conn.prepareStatement(sqlQuery)) {
 
 			statement.setString(1, name);
@@ -209,7 +217,7 @@ public class DBManager {
 	
 	public static synchronized boolean Delete(String name) {
 		String SQLquery = "DELETE FROM users WHERE userID = ?";
-		try (Connection conn = DriverManager.getConnection(URL);
+		try (Connection conn = getConnection();
 				PreparedStatement statement = conn.prepareStatement(SQLquery)) {
 
 			statement.setString(1, name);

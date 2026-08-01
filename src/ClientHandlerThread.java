@@ -84,7 +84,7 @@ public class ClientHandlerThread implements Runnable {
 			input.close();
 		} catch (SocketTimeoutException e) {
 			System.out.println(this.connection.getInetAddress().getCanonicalHostName() + " Has TimedOut");
-			e.printStackTrace();
+		
 			try {
 				output.writeObject("You have TimedOut");
 			} catch (IOException e1) {
@@ -92,15 +92,15 @@ public class ClientHandlerThread implements Runnable {
 			}
 			this.closeConection();
 		} catch (IOException e) {
-			e.printStackTrace();
+		
 			System.out.println(this.connection.getInetAddress().getCanonicalHostName() + " Has Left the server");
 			this.closeConection();
 		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
+	
 			System.out.println(this.connection.getInetAddress().getCanonicalHostName() + " Class Error");
 			this.closeConection();
 		} catch (Exception e) {
-			e.printStackTrace();
+		
 			System.out.println(this.connection.getInetAddress().getCanonicalHostName() + " Disconected form server");
 			this.closeConection();
 		}
@@ -226,10 +226,8 @@ public class ClientHandlerThread implements Runnable {
 			} else if (Choice.startsWith("/")) {
 				String[] msg = Choice.split(" ", 2);
 				String cmd = msg[0].substring(1);
-				System.out.println(cmd);
 				if (cmd.toLowerCase().equals("details")) {
 					String[] Details = DBManager.getInfo(this.Id);
-					System.out.println(Details[0]);
 					output.writeObject("DETAILS\n" + "Name: " + Details[0] + "\nUUID" + Details[1]);
 				}
 				else if (cmd.toLowerCase().equals("delete")) {
@@ -256,34 +254,21 @@ public class ClientHandlerThread implements Runnable {
 				    output.writeObject("ENTER UUID");
 				    String UUID = (String) input.readObject();
 
-				    int PassCount = 0;
+			
 				    boolean isAuth = DBManager.checkContact(name, UUID);
 
-				    while (!isAuth && PassCount < 5) {
-				        PassCount++;
-				        output.writeObject("Incorrect credentials. Try again (" +
-				            (4 - PassCount) + " attempts left)");
-
-				        output.writeObject("ENTER ContactName");
-				        name = (String) input.readObject();
-				        output.writeObject("ENTER UUID");
-				        UUID = (String) input.readObject();
-
-				        isAuth = DBManager.checkContact(name, UUID);
-				    }
 
 				    if (isAuth) {
 				    	output.writeObject("Contact Added");
 				        DBManager.addContact(this.Id, name);
 				    } else {
-				        output.writeObject("Too many tries");
+				        output.writeObject("no contact");
 				    }
 				}
 				else if (cmd.toLowerCase().startsWith("contacts")) {
-					System.out.println("hello?");
+				
 					List<String> contacts = DBManager.searchContactList(this.Id);
 					int i = 0;
-					System.out.println(contacts);
 					if(contacts != null) {
 						if (contacts.size()!=0) {
 							for (String val: contacts) {
@@ -291,16 +276,16 @@ public class ClientHandlerThread implements Runnable {
 								output.writeObject(i+". "+val);
 							}
 						}else {
-							output.writeObject("Coudnt get Contacts (maybe Empty?)");
+							output.writeObject("No Contacts Found");
 						}
 					}else {
-						output.writeObject("Coudnt get Contacts (maybe Empty?)");
+						output.writeObject("Couldn't get contacts (maybe empty?).");
 					}
 				}
 
 			} else if (Choice.toLowerCase().startsWith("help")) {
 
-				output.writeObject("Commands\n@username Message\n/Details");
+				output.writeObject("Commands\n@username Message\n/Details\n/add\n/contacts\n/delete");
 			
 				
 
