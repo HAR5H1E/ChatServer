@@ -8,7 +8,6 @@ import java.util.UUID;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-
 import org.mindrot.jbcrypt.BCrypt;
 
 public class ClientHandlerThread implements Runnable {
@@ -41,11 +40,10 @@ public class ClientHandlerThread implements Runnable {
 				System.out.println("Removed User: " + this.Id);
 				mainServer.serverClient.remove(this.Id);
 			}
-			
+
 			this.connection.close();
 			output.close();
 			input.close();
-			
 
 		} catch (IOException e) {
 
@@ -59,7 +57,7 @@ public class ClientHandlerThread implements Runnable {
 				LocalDateTime now = LocalDateTime.now();
 				DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 				String TimeStamp = now.format(format);
-				output.writeObject("["+TimeStamp+"] "+sender.Id + " : " + msg);
+				output.writeObject("[" + TimeStamp + "] " + sender.Id + " : " + msg);
 				output.flush();
 			}
 		} catch (Exception e) {
@@ -76,15 +74,15 @@ public class ClientHandlerThread implements Runnable {
 
 		try {
 			int val = this.UserLogin();
-			if (val == 0){
+			if (val == 0) {
 				this.MainPage();
 			}
-			
+
 			output.close();
 			input.close();
 		} catch (SocketTimeoutException e) {
 			System.out.println(this.connection.getInetAddress().getCanonicalHostName() + " Has TimedOut");
-		
+
 			try {
 				output.writeObject("You have TimedOut");
 			} catch (IOException e1) {
@@ -92,15 +90,15 @@ public class ClientHandlerThread implements Runnable {
 			}
 			this.closeConection();
 		} catch (IOException e) {
-		
+
 			System.out.println(this.connection.getInetAddress().getCanonicalHostName() + " Has Left the server");
 			this.closeConection();
 		} catch (ClassNotFoundException e) {
-	
+
 			System.out.println(this.connection.getInetAddress().getCanonicalHostName() + " Class Error");
 			this.closeConection();
 		} catch (Exception e) {
-		
+
 			System.out.println(this.connection.getInetAddress().getCanonicalHostName() + " Disconected form server");
 			this.closeConection();
 		}
@@ -117,14 +115,13 @@ public class ClientHandlerThread implements Runnable {
 
 				output.writeObject("ENTER UserName");
 				String User = (String) input.readObject();
-				
-				while (User.toLowerCase().equals("null") ||
-						DBManager.SearchUserAvailability(User)) {
-					
+
+				while (User.toLowerCase().equals("null") || DBManager.SearchUserAvailability(User)) {
+
 					output.writeObject("UserNames Unavailable");
 					output.writeObject("ENTER UserName");
 					User = (String) input.readObject();
-					
+
 				}
 
 				output.writeObject("ENTER Password");
@@ -161,13 +158,11 @@ public class ClientHandlerThread implements Runnable {
 					String password = (String) input.readObject();
 					String val = DBManager.Search(User);
 
-					if (val != null && BCrypt.checkpw(password, val)
-							&& !mainServer.serverClient.containsKey(User)) {
+					if (val != null && BCrypt.checkpw(password, val) && !mainServer.serverClient.containsKey(User)) {
 						PassCount = 0;
 						this.Id = User;
-						if (this.Id != null
-								&& !this.Id.trim().isEmpty()) {
-							
+						if (this.Id != null && !this.Id.trim().isEmpty()) {
+
 							mainServer.serverClient.put(this.Id, this);
 						}
 						IsAuth = true;
@@ -176,8 +171,8 @@ public class ClientHandlerThread implements Runnable {
 					} else {
 						PassCount++;
 						if (PassCount < 5) {
-							output.writeObject(
-									"Incorrect credentials or User session Exists. Try again (" + (5 - PassCount) + " attempts left)");
+							output.writeObject("Incorrect credentials or User session Exists. Try again ("
+									+ (5 - PassCount) + " attempts left)");
 						}
 					}
 
@@ -209,18 +204,18 @@ public class ClientHandlerThread implements Runnable {
 				String[] msg = Choice.split(" ", 2);
 				String recip = msg[0].substring(1);
 				if (msg.length == 2) {
-					if (DBManager.getContacts(this.Id,recip)) {
+					if (DBManager.getContacts(this.Id, recip)) {
 						ClientHandlerThread recipId = mainServer.serverClient.get(recip);
 						if (recipId != null) {
 							recipId.sendMessage(this, msg[1]);
-	
+
 						} else {
 							output.writeObject("RECIPIENT OFFLINE; TRY WHEN ONLINE");
 						}
-					}else {
+					} else {
 						output.writeObject("RECIPIENT NOT IN YOUR CONTACTS LIST(Use cmd /add)");
 					}
-				}else {
+				} else {
 					output.writeObject("USAGE: @username message");
 				}
 			} else if (Choice.startsWith("/")) {
@@ -229,8 +224,7 @@ public class ClientHandlerThread implements Runnable {
 				if (cmd.toLowerCase().equals("details")) {
 					String[] Details = DBManager.getInfo(this.Id);
 					output.writeObject("DETAILS\n" + "Name: " + Details[0] + "\nUUID" + Details[1]);
-				}
-				else if (cmd.toLowerCase().equals("delete")) {
+				} else if (cmd.toLowerCase().equals("delete")) {
 					output.writeObject("ENTER Password");
 					String password = (String) input.readObject();
 					String val = DBManager.Search(this.Id);
@@ -239,46 +233,42 @@ public class ClientHandlerThread implements Runnable {
 						if (DBManager.Delete(this.Id)) {
 							output.writeObject("REMOVING USER");
 							output.writeObject("r--ShutDown--r");
-						}else {
+						} else {
 							output.writeObject("ERROR COULD NOT DELETE USER");
-							
+
 						}
-					}else {
+					} else {
 						output.writeObject("INCORRECT PASSWORD");
 					}
-					
-						
-				}else if (cmd.toLowerCase().equals("add")) {
-				    output.writeObject("ENTER ContactName");
-				    String name = (String) input.readObject();
-				    output.writeObject("ENTER UUID");
-				    String UUID = (String) input.readObject();
 
-			
-				    boolean isAuth = DBManager.checkContact(name, UUID);
+				} else if (cmd.toLowerCase().equals("add")) {
+					output.writeObject("ENTER ContactName");
+					String name = (String) input.readObject();
+					output.writeObject("ENTER UUID");
+					String UUID = (String) input.readObject();
 
+					boolean isAuth = DBManager.checkContact(name, UUID);
 
-				    if (isAuth) {
-				    	output.writeObject("Contact Added");
-				        DBManager.addContact(this.Id, name);
-				    } else {
-				        output.writeObject("no contact");
-				    }
-				}
-				else if (cmd.toLowerCase().startsWith("contacts")) {
-				
+					if (isAuth) {
+						output.writeObject("Contact Added");
+						DBManager.addContact(this.Id, name);
+					} else {
+						output.writeObject("no contact");
+					}
+				} else if (cmd.toLowerCase().startsWith("contacts")) {
+
 					List<String> contacts = DBManager.searchContactList(this.Id);
 					int i = 0;
-					if(contacts != null) {
-						if (contacts.size()!=0) {
-							for (String val: contacts) {
+					if (contacts != null) {
+						if (contacts.size() != 0) {
+							for (String val : contacts) {
 								i++;
-								output.writeObject(i+". "+val);
+								output.writeObject(i + ". " + val);
 							}
-						}else {
+						} else {
 							output.writeObject("No Contacts Found");
 						}
-					}else {
+					} else {
 						output.writeObject("Couldn't get contacts (maybe empty?).");
 					}
 				}
@@ -286,8 +276,6 @@ public class ClientHandlerThread implements Runnable {
 			} else if (Choice.toLowerCase().startsWith("help")) {
 
 				output.writeObject("Commands\n@username Message\n/Details\n/add\n/contacts\n/delete");
-			
-				
 
 			} else {
 				output.writeObject("Incorrect format");

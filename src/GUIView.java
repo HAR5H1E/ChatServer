@@ -1,0 +1,51 @@
+import java.io.IOException;
+import java.util.Arrays;
+
+import com.googlecode.lanterna.TerminalSize;
+import com.googlecode.lanterna.TextColor;
+import com.googlecode.lanterna.graphics.SimpleTheme;
+import com.googlecode.lanterna.gui2.BasicWindow;
+
+import com.googlecode.lanterna.gui2.DefaultWindowManager;
+import com.googlecode.lanterna.gui2.Direction;
+import com.googlecode.lanterna.gui2.EmptySpace;
+import com.googlecode.lanterna.gui2.LinearLayout;
+import com.googlecode.lanterna.gui2.MultiWindowTextGUI;
+import com.googlecode.lanterna.gui2.Panel;
+import com.googlecode.lanterna.gui2.TextBox;
+import com.googlecode.lanterna.screen.Screen;
+import com.googlecode.lanterna.screen.TerminalScreen;
+import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
+import com.googlecode.lanterna.terminal.Terminal;
+
+public class GUIView {
+
+    public static void main(String[] args) throws IOException {
+
+        Terminal terminal = new DefaultTerminalFactory().createTerminalEmulator();
+        Screen screen = new TerminalScreen(terminal);
+        screen.startScreen();
+
+        BasicWindow window = new BasicWindow("ChatBox");
+        
+        TextBox chatFeed = new TextBox(new TerminalSize(75, 15),TextBox.Style.MULTI_LINE);
+        chatFeed.setTheme(new SimpleTheme(TextColor.ANSI.WHITE, TextColor.ANSI.BLACK));
+        chatFeed.setReadOnly(true); 
+
+        Panel MainContainer = new Panel(new LinearLayout(Direction.VERTICAL));
+        MainContainer.addComponent(chatFeed);
+      
+        
+
+        window.setComponent(MainContainer);
+        window.setHints(Arrays.asList(BasicWindow.Hint.EXPANDED));
+
+        MultiWindowTextGUI gui = new MultiWindowTextGUI(
+            screen, 
+            new DefaultWindowManager(), 
+            new EmptySpace(TextColor.ANSI.BLACK)
+        );
+        
+        gui.addWindowAndWait(window);
+    }
+}
