@@ -5,7 +5,8 @@ import com.googlecode.lanterna.TerminalSize;
 import com.googlecode.lanterna.TextColor;
 import com.googlecode.lanterna.graphics.SimpleTheme;
 import com.googlecode.lanterna.gui2.BasicWindow;
-
+import com.googlecode.lanterna.gui2.Border;
+import com.googlecode.lanterna.gui2.Borders;
 import com.googlecode.lanterna.gui2.DefaultWindowManager;
 import com.googlecode.lanterna.gui2.Direction;
 import com.googlecode.lanterna.gui2.EmptySpace;
@@ -29,15 +30,23 @@ public class GUIView {
         BasicWindow window = new BasicWindow("ChatBox");
         
         TextBox chatFeed = new TextBox(new TerminalSize(75, 15),TextBox.Style.MULTI_LINE);
-        chatFeed.setTheme(new SimpleTheme(TextColor.ANSI.WHITE, TextColor.ANSI.BLACK));
+        chatFeed.setTheme(new SimpleTheme(TextColor.ANSI.GREEN_BRIGHT, TextColor.ANSI.BLACK));
         chatFeed.setReadOnly(true); 
+        
+        TextBox CMDINPUT = new TextBox(new TerminalSize(74, 1),TextBox.Style.MULTI_LINE);
+        CMDINPUT.setTheme(new SimpleTheme(TextColor.ANSI.GREEN_BRIGHT, TextColor.ANSI.BLACK));
+        
+        Border cmdInputBordered = CMDINPUT.withBorder(Borders.singleLine("Input"));
 
         Panel MainContainer = new Panel(new LinearLayout(Direction.VERTICAL));
         MainContainer.addComponent(chatFeed);
+        MainContainer.addComponent(new EmptySpace(new TerminalSize(1,1)));
+        MainContainer.addComponent(cmdInputBordered);
       
         
 
         window.setComponent(MainContainer);
+        window.setFocusedInteractable(CMDINPUT);
         window.setHints(Arrays.asList(BasicWindow.Hint.EXPANDED));
 
         MultiWindowTextGUI gui = new MultiWindowTextGUI(
