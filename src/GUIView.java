@@ -14,6 +14,7 @@ import com.googlecode.lanterna.gui2.LinearLayout;
 import com.googlecode.lanterna.gui2.MultiWindowTextGUI;
 import com.googlecode.lanterna.gui2.Panel;
 import com.googlecode.lanterna.gui2.TextBox;
+import com.googlecode.lanterna.input.KeyType;
 import com.googlecode.lanterna.screen.Screen;
 import com.googlecode.lanterna.screen.TerminalScreen;
 import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
@@ -35,6 +36,19 @@ public class GUIView {
         
         TextBox CMDINPUT = new TextBox(new TerminalSize(74, 1),TextBox.Style.MULTI_LINE);
         CMDINPUT.setTheme(new SimpleTheme(TextColor.ANSI.GREEN_BRIGHT, TextColor.ANSI.BLACK));
+        CMDINPUT.setInputFilter((interactedComponent, key) -> {
+        	if (key.getKeyType() == KeyType.Enter) {
+                String text = CMDINPUT.getText().trim();
+                if (!text.isEmpty()) {
+                    String current = chatFeed.getText();
+                    chatFeed.setText(current + "\n[You]: " + text);
+                    CMDINPUT.setText("");
+                    
+                }
+                return false; 
+            }
+            return true;
+        });
         
         Border cmdInputBordered = CMDINPUT.withBorder(Borders.singleLine("Input"));
 
