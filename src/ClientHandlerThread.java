@@ -118,17 +118,17 @@ public class ClientHandlerThread implements Runnable {
 
 				while (User.toLowerCase().equals("null") || DBManager.SearchUserAvailability(User)) {
 
-					output.writeObject("UserNames Unavailable");
-					output.writeObject("ENTER UserName");
+					output.writeObject("[SERVER] UserNames Unavailable");
+					output.writeObject("[SERVER] ENTER UserName");
 					User = (String) input.readObject();
 
 				}
 
-				output.writeObject("ENTER Password");
+				output.writeObject("[SERVER] ENTER Password");
 				String newPassword = (String) input.readObject();
 				while (newPassword.toLowerCase().equals("null")) {
-					output.writeObject("Cannot Enter Password as Null");
-					output.writeObject("ENTER Password");
+					output.writeObject("[SERVER] Cannot Enter Password as Null");
+					output.writeObject("[SERVER] ENTER Password");
 					newPassword = (String) input.readObject();
 				}
 
@@ -151,10 +151,10 @@ public class ClientHandlerThread implements Runnable {
 				int PassCount = 0;
 
 				while (PassCount < 5) {
-					output.writeObject("ENTER UserName");
+					output.writeObject("[SERVER] ENTER UserName");
 					String User = (String) input.readObject();
 
-					output.writeObject("ENTER Password");
+					output.writeObject("[SERVER] ENTER Password");
 					String password = (String) input.readObject();
 					String val = DBManager.Search(User);
 
@@ -171,7 +171,7 @@ public class ClientHandlerThread implements Runnable {
 					} else {
 						PassCount++;
 						if (PassCount < 5) {
-							output.writeObject("Incorrect credentials or User session Exists. Try again ("
+							output.writeObject("[SERVER] Incorrect credentials or User session Exists. Try again ("
 									+ (5 - PassCount) + " attempts left)");
 						}
 					}
@@ -179,14 +179,14 @@ public class ClientHandlerThread implements Runnable {
 				}
 
 				if (!IsAuth) {
-					output.writeObject("Too Many Tries Exiting Program");
+					output.writeObject("[SERVER] Too Many Tries Exiting Program");
 					this.closeConection();
 					return 1;
 				} else {
 					break;
 				}
 			} else {
-				output.writeObject("Invalid Either Login or Register");
+				output.writeObject("[SERVER] Invalid Either Login or Register");
 			}
 
 		}
@@ -196,7 +196,7 @@ public class ClientHandlerThread implements Runnable {
 	}
 
 	private int MainPage() throws Exception, IOException, SocketTimeoutException, ClassNotFoundException {
-		output.writeObject("WELCOME TO THE MAIN PAGE (press help for commands or quit to exit)");
+		output.writeObject("[SERVER] WELCOME TO THE MAIN PAGE \n[SERVER] (press help for commands or quit to exit)");
 		while (true) {
 			String Choice = (String) input.readObject();
 			Choice = Choice.trim();
@@ -210,50 +210,50 @@ public class ClientHandlerThread implements Runnable {
 							recipId.sendMessage(this, msg[1]);
 
 						} else {
-							output.writeObject("RECIPIENT OFFLINE; TRY WHEN ONLINE");
+							output.writeObject("[SERVER] RECIPIENT OFFLINE - TRY WHEN ONLINE");
 						}
 					} else {
-						output.writeObject("RECIPIENT NOT IN YOUR CONTACTS LIST(Use cmd /add)");
+						output.writeObject("[SERVER] RECIPIENT NOT IN YOUR CONTACTS LIST(Use cmd /add)");
 					}
 				} else {
-					output.writeObject("USAGE: @username message");
+					output.writeObject("[SERVER] USAGE: @username message");
 				}
 			} else if (Choice.startsWith("/")) {
 				String[] msg = Choice.split(" ", 2);
 				String cmd = msg[0].substring(1);
 				if (cmd.toLowerCase().equals("details")) {
 					String[] Details = DBManager.getInfo(this.Id);
-					output.writeObject("DETAILS\n" + "Name: " + Details[0] + "\nUUID" + Details[1]);
+					output.writeObject("[SERVER] DETAILS\n" + "[SERVER] Name: " + Details[0] + "\n[SERVER] UUID" + Details[1]);
 				} else if (cmd.toLowerCase().equals("delete")) {
-					output.writeObject("ENTER Password");
+					output.writeObject("[SERVER] ENTER Password");
 					String password = (String) input.readObject();
 					String val = DBManager.Search(this.Id);
 
 					if (val != null && BCrypt.checkpw(password, val)) {
 						if (DBManager.Delete(this.Id)) {
-							output.writeObject("REMOVING USER");
+							output.writeObject("[SERVER] REMOVING USER");
 							output.writeObject("r--ShutDown--r");
 						} else {
-							output.writeObject("ERROR COULD NOT DELETE USER");
+							output.writeObject("[SERVER] ERROR COULD NOT DELETE USER");
 
 						}
 					} else {
-						output.writeObject("INCORRECT PASSWORD");
+						output.writeObject("[SERVER] INCORRECT PASSWORD");
 					}
 
 				} else if (cmd.toLowerCase().equals("add")) {
-					output.writeObject("ENTER ContactName");
+					output.writeObject("[SERVER] ENTER ContactName");
 					String name = (String) input.readObject();
-					output.writeObject("ENTER UUID");
+					output.writeObject("[SERVER] ENTER UUID");
 					String UUID = (String) input.readObject();
 
 					boolean isAuth = DBManager.checkContact(name, UUID);
 
 					if (isAuth) {
-						output.writeObject("Contact Added");
+						output.writeObject("[SERVER] Contact Added");
 						DBManager.addContact(this.Id, name);
 					} else {
-						output.writeObject("no contact");
+						output.writeObject("[SERVER] no contact");
 					}
 				} else if (cmd.toLowerCase().startsWith("contacts")) {
 
@@ -266,19 +266,19 @@ public class ClientHandlerThread implements Runnable {
 								output.writeObject(i + ". " + val);
 							}
 						} else {
-							output.writeObject("No Contacts Found");
+							output.writeObject("[SERVER] No Contacts Found");
 						}
 					} else {
-						output.writeObject("Couldn't get contacts (maybe empty?).");
+						output.writeObject("[SERVER] Couldn't get contacts (maybe empty?).");
 					}
 				}
 
 			} else if (Choice.toLowerCase().startsWith("help")) {
 
-				output.writeObject("Commands\n@username Message\n/Details\n/add\n/contacts\n/delete");
+				output.writeObject("[SERVER] Commands\n@username Message\n/Details\n/add\n/contacts\n/delete");
 
 			} else {
-				output.writeObject("Incorrect format");
+				output.writeObject("[SERVER] Incorrect format");
 			}
 
 		}

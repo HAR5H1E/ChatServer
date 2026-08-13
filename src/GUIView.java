@@ -1,6 +1,7 @@
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
-
 import com.googlecode.lanterna.TerminalSize;
 import com.googlecode.lanterna.TextColor;
 import com.googlecode.lanterna.graphics.SimpleTheme;
@@ -35,14 +36,23 @@ public class GUIView {
         chatFeed.setReadOnly(true); 
         
         TextBox CMDINPUT = new TextBox(new TerminalSize(74, 1),TextBox.Style.MULTI_LINE);
-        CMDINPUT.setTheme(new SimpleTheme(TextColor.ANSI.GREEN_BRIGHT, TextColor.ANSI.BLACK));
+        CMDINPUT.setTheme(new SimpleTheme(TextColor.ANSI.RED_BRIGHT, TextColor.ANSI.BLACK));
+        CMDINPUT.setText("> ");
+        CMDINPUT.setCaretPosition(0, 2);
         CMDINPUT.setInputFilter((interactedComponent, key) -> {
+        	
         	if (key.getKeyType() == KeyType.Enter) {
+        		
                 String text = CMDINPUT.getText().trim();
+                System.out.println(text.length());
                 if (!text.isEmpty()) {
                     String current = chatFeed.getText();
-                    chatFeed.setText(current + "\n[You]: " + text);
-                    CMDINPUT.setText("");
+                    LocalDateTime now = LocalDateTime.now();
+    				DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+    				String TimeStamp = now.format(format);
+                    chatFeed.setText(current + "\n["+TimeStamp+" You]: " + text);
+                    CMDINPUT.setText("> ");
+                    CMDINPUT.setCaretPosition(0, 2);
                     
                 }
                 return false; 
