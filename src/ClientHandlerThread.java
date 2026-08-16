@@ -285,12 +285,12 @@ public class ClientHandlerThread implements Runnable {
 			} else if (Choice.toLowerCase().startsWith("help")) {
 
 				output.writeObject("Commands");
-				output.writeObject("@username Message");
+				output.writeObject("@Username Message");
 				output.writeObject("/Details");
-				output.writeObject("/add");
-				output.writeObject("/contacts");
-				output.writeObject("/clear");
-				output.writeObject("/delete");
+				output.writeObject("/Add");
+				output.writeObject("/Contacts");
+				output.writeObject("/Clear");
+				output.writeObject("/Delete");
 
 			} else {
 				output.writeObject("Incorrect format");

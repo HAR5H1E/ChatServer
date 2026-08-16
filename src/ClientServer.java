@@ -166,6 +166,14 @@ public class ClientServer {
 
 				return true;
 			});
+			
+			chatFeed.setInputFilter((interactedComponent, key) -> {
+				if (key.getKeyType() == KeyType.ArrowDown) {
+					CMDINPUT.takeFocus();
+					return false;
+				}
+				return true;
+				});
 
 			gui.addWindowAndWait(window);
 
