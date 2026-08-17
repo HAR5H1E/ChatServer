@@ -33,6 +33,13 @@ public class ClientHandlerThread implements Runnable {
 		}
 
 	}
+	
+	public String TimeStamp() {
+		LocalDateTime now = LocalDateTime.now();
+		DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+		String TimeStamp = now.format(format);
+		return TimeStamp;
+	}
 
 	private void closeConection() {
 		try {
@@ -54,10 +61,8 @@ public class ClientHandlerThread implements Runnable {
 	public synchronized void sendMessage(ClientHandlerThread sender, String msg) {
 		try {
 			if (msg != null) {
-				LocalDateTime now = LocalDateTime.now();
-				DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-				String TimeStamp = now.format(format);
-				output.writeObject("[" + TimeStamp + "] " + sender.Id + " : " + msg);
+				
+				output.writeObject("r-m-r[" + TimeStamp() + "] " + sender.Id + " : " + msg);
 				output.flush();
 			}
 		} catch (Exception e) {
@@ -200,6 +205,15 @@ public class ClientHandlerThread implements Runnable {
 		output.writeObject("r--Clear--r");
 		output.writeObject("WELCOME TO THE MAIN PAGE");
 		output.writeObject("(press help for commands or quit to exit)");
+		List<String[]> History = DBManager.searchHistory(this.Id);
+		boolean isHist = false;
+		if(History!=null ) {
+			if (History.size()!=0) {
+				output.writeObject("You Have "+History.size()+" Messages");
+				isHist = true;
+			}
+		}
+		
 		while (true) {
 			String Choice = (String) input.readObject();
 			Choice = Choice.trim();
@@ -213,7 +227,9 @@ public class ClientHandlerThread implements Runnable {
 							recipId.sendMessage(this, msg[1]);
 
 						} else {
-							output.writeObject("RECIPIENT OFFLINE - TRY WHEN ONLINE");
+							output.writeObject("RECIPIENT OFFLINE : Saving Messages");
+							
+							DBManager.InsertChatRow(this.Id, recip, msg[1],TimeStamp());
 						}
 					} else {
 						output.writeObject("RECIPIENT NOT IN YOUR CONTACTS LIST(Use cmd /add)");
@@ -226,9 +242,9 @@ public class ClientHandlerThread implements Runnable {
 				String cmd = msg[0].substring(1);
 				if (cmd.toLowerCase().equals("details")) {
 					String[] Details = DBManager.getInfo(this.Id);
-					output.writeObject("[SERVER] DETAILS");
-					output.writeObject("[SERVER] Name: " + Details[0]);
-					output.writeObject("[SERVER] UUID: " + Details[1]);
+					output.writeObject("DETAILS");
+					output.writeObject("Name: " + Details[0]);
+					output.writeObject("UUID: " + Details[1]);
 				} else if (cmd.toLowerCase().equals("delete")) {
 					output.writeObject("ENTER Password");
 					String password = (String) input.readObject();
@@ -276,6 +292,17 @@ public class ClientHandlerThread implements Runnable {
 					} else {
 						output.writeObject("Couldn't get contacts (maybe empty?).");
 					}
+				} else if (cmd.toLowerCase().startsWith("history")) {
+					if (isHist) {
+						for (String[] Hist : History) {
+							output.writeObject("[" + Hist[3] + "] " + Hist[0] + " : " + Hist[2]);
+						}
+						DBManager.DeleteHistory(this.Id);
+						History = null;
+						isHist = false;
+					}else {
+						output.writeObject("You have No Messages");
+					}
 				} else if (cmd.toLowerCase().startsWith("clear")) {
 					output.writeObject("r--Clear--r");
 					output.writeObject("WELCOME TO THE MAIN PAGE");
@@ -289,8 +316,10 @@ public class ClientHandlerThread implements Runnable {
 				output.writeObject("/Details");
 				output.writeObject("/Add");
 				output.writeObject("/Contacts");
+				output.writeObject("/History");
 				output.writeObject("/Clear");
 				output.writeObject("/Delete");
+				
 
 			} else {
 				output.writeObject("Incorrect format");

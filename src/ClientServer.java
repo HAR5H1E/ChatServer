@@ -65,6 +65,15 @@ public class ClientServer {
 		});
 	}
 	
+	public static void UpdateChatMessage(String input)  {
+		gui.getGUIThread().invokeLater(()->{
+			if (!input.isEmpty()) {
+				chatFeed.addLine(input.substring(5));
+				Scroll(chatFeed);	
+			}
+		});
+	}
+	
 
 	public static void main(String[] args) throws IOException {
 
@@ -111,6 +120,8 @@ public class ClientServer {
 							input.close();
 						} else if (inputServer.equals("r--Clear--r")) {
 							chatFeed.setText("");
+						}else if (inputServer.startsWith("r-m-r")) {
+							UpdateChatMessage(inputServer);
 						} else {
 							System.out.println(inputServer);
 							UpdateChatListener(inputServer);

@@ -14,6 +14,7 @@ public class mainServer {
 	public static void main(String args[]) {
 		DBManager.CreateUserTable();
 		DBManager.CreateContactTable();
+		DBManager.CreateChatHisTable();
 		try {
 
 			ServerSocket mainServer = new ServerSocket(PORT);

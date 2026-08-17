@@ -56,6 +56,87 @@ public class DBManager {
             return false;
         }
     }
+	
+	public static boolean CreateChatHisTable() {
+		String sqlQuery = "CREATE TABLE IF NOT EXISTS chatHistory (" 
+				+ "userID TEXT NOT NULL, "
+                + "ContactID TEXT NOT NULL, "
+				+ "Message TEXT NOT NULL, "
+                + "DateTime Text NOT NULL"
+				+");";
+
+		try (Connection conn = getConnection(); 
+				Statement statement = conn.createStatement()) {
+
+			statement.execute(sqlQuery);
+			return true;
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+	
+	public static synchronized boolean InsertChatRow(String name, String Contact, String Message,String Date) {
+		String sqlQuery = "INSERT INTO chatHistory (userID, ContactID, Message, DateTime) VALUES (?, ?, ?, ?)";
+
+		try (Connection conn =getConnection();
+				PreparedStatement statement = conn.prepareStatement(sqlQuery)) {
+
+			statement.setString(1, name);
+			statement.setString(2, Contact);
+			statement.setString(3, Message);
+			statement.setString(4, Date);
+			statement.executeUpdate();
+			return true;
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+	
+	public static synchronized List<String[]> searchHistory(String name) {
+		String sqlQuery = "SELECT userID,ContactID,Message,DateTime FROM chatHistory WHERE ContactID = ? ";
+		List<String[]> contacts = new ArrayList<>();
+		try (Connection conn = getConnection();
+				PreparedStatement statement = conn.prepareStatement(sqlQuery)) {
+
+			statement.setString(1, name);
+
+			try (ResultSet rs = statement.executeQuery()) {
+				while (rs.next()) {
+					String[] Infor = {rs.getString("userID"),
+							rs.getString("ContactID"),
+							rs.getString("Message"),
+							rs.getString("DateTime")};
+					contacts.add(Infor);
+				}
+				
+				return contacts;
+			}
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	public static synchronized boolean DeleteHistory(String name) {
+		String SQLquery = "DELETE FROM chatHistory WHERE ContactID = ?";
+		try (Connection conn = getConnection();
+				PreparedStatement statement = conn.prepareStatement(SQLquery)) {
+
+			statement.setString(1, name);
+			statement.executeUpdate();
+			return true;
+			
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
 
 	public static synchronized boolean InsertRow(String name, String password, String uuid) {
 		String sqlQuery = "INSERT INTO users (userID, Password, numID) VALUES (?, ?, ?)";
