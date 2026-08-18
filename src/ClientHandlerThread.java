@@ -33,7 +33,7 @@ public class ClientHandlerThread implements Runnable {
 		}
 
 	}
-	
+
 	public String TimeStamp() {
 		LocalDateTime now = LocalDateTime.now();
 		DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
@@ -61,7 +61,7 @@ public class ClientHandlerThread implements Runnable {
 	public synchronized void sendMessage(ClientHandlerThread sender, String msg) {
 		try {
 			if (msg != null) {
-				
+
 				output.writeObject("r-m-r[" + TimeStamp() + "] " + sender.Id + " : " + msg);
 				output.flush();
 			}
@@ -109,9 +109,11 @@ public class ClientHandlerThread implements Runnable {
 		}
 
 	}
+	
 
 	private int UserLogin() throws Exception, IOException, SocketTimeoutException, ClassNotFoundException {
-
+		
+		boolean isBack = false;
 		while (true) {
 			output.writeObject("LOGIN OR REGISTER");
 			String Choice = (String) input.readObject();
@@ -120,21 +122,46 @@ public class ClientHandlerThread implements Runnable {
 
 				output.writeObject("ENTER UserName");
 				String User = (String) input.readObject();
+				if (User.toLowerCase().equals("back")) {
+					continue;
+				}
 
 				while (User.toLowerCase().equals("null") || DBManager.SearchUserAvailability(User)) {
 
 					output.writeObject("UserNames Unavailable");
 					output.writeObject("ENTER UserName");
 					User = (String) input.readObject();
+					if (User.toLowerCase().equals("back")) {
+						isBack = true;
+						break;
+					}
 
+				}
+				
+				if (isBack) {
+					isBack = false;
+					continue;
 				}
 
 				output.writeObject("ENTER Password");
 				String newPassword = (String) input.readObject();
+				if (newPassword.toLowerCase().equals("back")) {
+					continue;
+				}
+				
 				while (newPassword.toLowerCase().equals("null")) {
 					output.writeObject("Cannot Enter Password as Null");
 					output.writeObject("ENTER Password");
 					newPassword = (String) input.readObject();
+					if (newPassword.toLowerCase().equals("back")) {
+						isBack = true;
+						break;
+					}
+				}
+				
+				if (isBack) {
+					isBack = false;
+					continue;
 				}
 
 				String UncID = UUID.randomUUID().toString();
@@ -158,9 +185,17 @@ public class ClientHandlerThread implements Runnable {
 				while (PassCount < 5) {
 					output.writeObject("ENTER UserName");
 					String User = (String) input.readObject();
+					if (User.toLowerCase().equals("back")) {
+						isBack = true;
+						break;
+					}
 
 					output.writeObject("ENTER Password");
 					String password = (String) input.readObject();
+					if (password.toLowerCase().equals("back")) {
+						isBack = true;
+						break;
+					}
 					String val = DBManager.Search(User);
 
 					if (val != null && BCrypt.checkpw(password, val) && !mainServer.serverClient.containsKey(User)) {
@@ -177,11 +212,15 @@ public class ClientHandlerThread implements Runnable {
 						PassCount++;
 						if (PassCount < 5) {
 							output.writeObject("Incorrect credentials or User session Exists.");
-							output.writeObject(" Try again ("
-									+ (5 - PassCount) + " attempts left)");
+							output.writeObject(" Try again (" + (5 - PassCount) + " attempts left)");
 						}
 					}
 
+				}
+				
+				if (isBack) {
+					isBack = false;
+					continue;
 				}
 
 				if (!IsAuth) {
@@ -207,13 +246,13 @@ public class ClientHandlerThread implements Runnable {
 		output.writeObject("(press help for commands or quit to exit)");
 		List<String[]> History = DBManager.searchHistory(this.Id);
 		boolean isHist = false;
-		if(History!=null ) {
-			if (History.size()!=0) {
-				output.writeObject("You Have "+History.size()+" Messages");
+		if (History != null) {
+			if (History.size() != 0) {
+				output.writeObject("You Have " + History.size() + " Messages");
 				isHist = true;
 			}
 		}
-		
+
 		while (true) {
 			String Choice = (String) input.readObject();
 			Choice = Choice.trim();
@@ -228,8 +267,8 @@ public class ClientHandlerThread implements Runnable {
 
 						} else {
 							output.writeObject("RECIPIENT OFFLINE : Saving Messages");
-							
-							DBManager.InsertChatRow(this.Id, recip, msg[1],TimeStamp());
+
+							DBManager.InsertChatRow(this.Id, recip, msg[1], TimeStamp());
 						}
 					} else {
 						output.writeObject("RECIPIENT NOT IN YOUR CONTACTS LIST(Use cmd /add)");
@@ -300,7 +339,7 @@ public class ClientHandlerThread implements Runnable {
 						DBManager.DeleteHistory(this.Id);
 						History = null;
 						isHist = false;
-					}else {
+					} else {
 						output.writeObject("You have No Messages");
 					}
 				} else if (cmd.toLowerCase().startsWith("clear")) {
@@ -319,7 +358,6 @@ public class ClientHandlerThread implements Runnable {
 				output.writeObject("/History");
 				output.writeObject("/Clear");
 				output.writeObject("/Delete");
-				
 
 			} else {
 				output.writeObject("Incorrect format");
