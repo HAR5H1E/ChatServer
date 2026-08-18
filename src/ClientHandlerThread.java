@@ -36,9 +36,6 @@ public class ClientHandlerThread implements Runnable {
 
 	}
 	
-	public void openCamera() {
-		
-	}
 
 	public String TimeStamp() {
 		LocalDateTime now = LocalDateTime.now();
@@ -143,12 +140,10 @@ public class ClientHandlerThread implements Runnable {
 					}
 
 				}
-				
 				if (isBack) {
 					isBack = false;
 					continue;
 				}
-
 				output.writeObject("ENTER Password");
 				String newPassword = (String) input.readObject();
 				if (newPassword.toLowerCase().equals("back")) {
@@ -164,12 +159,10 @@ public class ClientHandlerThread implements Runnable {
 						break;
 					}
 				}
-				
 				if (isBack) {
 					isBack = false;
 					continue;
 				}
-
 				String UncID = UUID.randomUUID().toString();
 				UncID = UncID.replace("-", "");
 
@@ -195,7 +188,6 @@ public class ClientHandlerThread implements Runnable {
 						isBack = true;
 						break;
 					}
-
 					output.writeObject("ENTER Password");
 					String password = (String) input.readObject();
 					if (password.toLowerCase().equals("back")) {
@@ -221,14 +213,11 @@ public class ClientHandlerThread implements Runnable {
 							output.writeObject(" Try again (" + (5 - PassCount) + " attempts left)");
 						}
 					}
-
 				}
-				
 				if (isBack) {
 					isBack = false;
 					continue;
 				}
-
 				if (!IsAuth) {
 					output.writeObject("Too Many Tries Exiting Program");
 					this.closeConection();
@@ -375,7 +364,7 @@ public class ClientHandlerThread implements Runnable {
 	private boolean getMessages(boolean isHist,List<String[]>History) throws IOException {
 		if (isHist) {
 			for (String[] Hist : History) {
-				output.writeObject("[" + Hist[3] + "] " + Hist[0] + " : " + Hist[2]);
+				output.writeObject("r-m-r[" + Hist[3] + "] " + Hist[0] + " : " + Hist[2]);
 			}
 			DBManager.DeleteHistory(this.Id);
 			History = null;
